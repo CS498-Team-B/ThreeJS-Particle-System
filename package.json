@@ -19,6 +19,7 @@
   "dependencies": {
     "@types/dat.gui": "^0.7.7",
     "dat.gui": "^0.7.7",
+    "fs.promises": "^0.1.2",
     "three": "^0.137.5"
   },
   "devDependencies": {

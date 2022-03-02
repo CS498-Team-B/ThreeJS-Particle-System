@@ -45,7 +45,7 @@ function init_three() {
             renderer.render(scene, camera);
         }
     );
-    camera.position.set(0, -5, 50);
+    camera.position.set(0, 0, -10);
     controls.update();
     
     const starTexture = new THREE.TextureLoader().load("./textures/star.png");
@@ -54,11 +54,71 @@ function init_three() {
     starTexture.repeat.set(1, 1);
 
     // Particle Setup
+    particleVertexShader = 
+    [
+    "attribute float customOpacity;",
+    "attribute float customSize;",
+    "attribute float customVisible;",  // float used as boolean (0 = false, 1 = true)
+    "varying vec4 vColor;",
+    "void main()",
+    "{",
+        "if ( customVisible > 0.5 )", 				// true
+            "vColor = vec4( vec3(1.0), customOpacity );", //     set color associated to vertex; use later in fragment shader.
+        "else",							// false
+            "vColor = vec4(0.0);", 		//     make particle invisible.
+            
+    
+        "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+        "gl_PointSize = customSize * ( 300.0 / length( mvPosition.xyz ) );",     // scale particles as objects in 3D space
+        "gl_Position = projectionMatrix * mvPosition;",
+    "}"
+    ].join("\n");
+    
+    particleFragmentShader =
+    [
+    "uniform sampler2D texture1;",
+    "varying vec4 vColor;",
+    "void main()", 
+    "{",
+        "gl_FragColor = vColor;",
+        "vec2 uv = vec2(gl_PointCoord.x, gl_PointCoord.y);",
+        "vec4 tex1 = texture2D( texture1,  uv );",
+        "gl_FragColor = gl_FragColor * tex1;",    // sets an otherwise white particle texture to desired color
+    "}"
+    ].join("\n");
+
+   const shaderMaterial = new THREE.ShaderMaterial( 
+        {
+            uniforms: 
+            {
+                texture1:   { type: "t", value: starTexture },
+            },
+            vertexShader:   particleVertexShader,
+            fragmentShader: particleFragmentShader,
+            transparent: true, // alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5, 
+            blending: THREE.NormalBlending, depthTest: true,
+            alphaTest: 0.5,
+        });
+
+    const visibles = new Float32Array(10000);
+    const sizes = new Float32Array(10000);
+    const opacitys = new Float32Array(10000);
+    
+    for (i = 0; i < 10000; i++) {
+        visibles[i] = 1.0;
+        opacitys[i] = 0.20;
+        sizes[i] = 0.15;
+    }
     const particleGeometry = new THREE.BufferGeometry;  // specify points
+    particleGeometry.setAttribute('customVisible', new THREE.BufferAttribute(visibles, 1));
+    particleGeometry.setAttribute('customSize', new THREE.BufferAttribute(sizes, 1));
+    particleGeometry.setAttribute('customOpacity', new THREE.BufferAttribute(opacitys, 1));
+
     const particleMaterial = new THREE.PointsMaterial(
         {
             map: starTexture,
             transparent: true,
+            opacity: 0.5,
             size: 0.025,
             color: "white",
         }
@@ -73,7 +133,7 @@ function init_three() {
 
     // assign positions to particles
     particleGeometry.setAttribute( "position", new THREE.BufferAttribute( positions, 3 ) );
-    const particleMesh = new THREE.Points( particleGeometry, particleMaterial ); // mesh
+    const particleMesh = new THREE.Points( particleGeometry, shaderMaterial ); // mesh
     scene.add(particleMesh);
         
     window.addEventListener( 'resize', onWindowResize );
