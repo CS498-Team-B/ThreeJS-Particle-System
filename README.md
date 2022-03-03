@@ -25,8 +25,8 @@ These settings include, but are not limited to
 ### Roadmap
 - [x] Initial ThreeJS Setup
 - [x] Initial DatGUI Setup
-- [ ] Static Particle Effect
-- [ ] Simple scene with camera based exploration
+- [x] Static Particle Effect
+- [x] Simple scene with camera based exploration
 - [ ] Particle Effects using an Emitter
 - [ ] Settings to change the parameters of emitter simulation (2 presets)
     - [ ] Fountain Emitter
