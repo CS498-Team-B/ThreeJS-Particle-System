@@ -8,7 +8,7 @@
 let engine;
 
 // ThreeJS
-let camera, scene, renderer, clock, controls;
+let camera, scene, renderer, clock, controls, particleMesh;
 
 // DatGUI
 let gui;
@@ -45,7 +45,7 @@ function init_three() {
             renderer.render(scene, camera);
         }
     );
-    camera.position.set(0, -5, 50);
+    camera.position.set(0, 0, -10);
     controls.update();
     
     const starTexture = new THREE.TextureLoader().load("./textures/star.png");
@@ -54,12 +54,49 @@ function init_three() {
     starTexture.repeat.set(1, 1);
 
     // Particle Setup
+    
+
+   const shaderMaterial = new THREE.ShaderMaterial( 
+        {
+            uniforms: 
+            {
+                texture1:   { type: "t", value: starTexture },
+            },
+            vertexShader:   particleVertexShader,
+            fragmentShader: particleFragmentShader,
+            transparent: true, // alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5, 
+            blending: THREE.NormalBlending, depthTest: true,
+            alphaTest: 0.5,
+            vertexColors: true,
+        });
+
+    const visibles = new Float32Array(10000);
+    const sizes = new Float32Array(10000);
+    const opacitys = new Float32Array(10000);
+    const colors = new Float32Array(10000 * 3);
+    
+    const vertexColor = new THREE.Color();
+
+    for (i = 0; i < 10000; i++) {
+        visibles[i] = 1.0;
+        opacitys[i] = 0.20;
+        sizes[i] = 0.3;
+
+        vertexColor.setHSL( Math.random(), 1, 0.5);
+        vertexColor.toArray(colors, i*3);
+    }
     const particleGeometry = new THREE.BufferGeometry;  // specify points
+    particleGeometry.setAttribute('customVisible', new THREE.BufferAttribute(visibles, 1));
+    particleGeometry.setAttribute('customSize', new THREE.BufferAttribute(sizes, 1));
+    particleGeometry.setAttribute('customOpacity', new THREE.BufferAttribute(opacitys, 1));
+    particleGeometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+
     const particleMaterial = new THREE.PointsMaterial(
         {
             map: starTexture,
             transparent: true,
-            size: 0.025,
+            opacity: 0.5,
+            size: 0.25,
             color: "white",
         }
     );  
@@ -73,7 +110,7 @@ function init_three() {
 
     // assign positions to particles
     particleGeometry.setAttribute( "position", new THREE.BufferAttribute( positions, 3 ) );
-    const particleMesh = new THREE.Points( particleGeometry, particleMaterial ); // mesh
+    particleMesh = new THREE.Points( particleGeometry, shaderMaterial ); // mesh
     scene.add(particleMesh);
         
     window.addEventListener( 'resize', onWindowResize );
@@ -99,6 +136,20 @@ function animate() {
  * render() - Manipulates the scene property for the current render frame
  */
 function render() {
+    const time = Date.now() * 0.005;
+    
+    particleMesh.rotation.z = 0.01 * time;
+
+    const geometry = particleMesh.geometry;
+	const attributes = geometry.attributes;
+    for ( let i = 0; i < attributes.customColor.array.length; i++ ) {
+
+        attributes.customSize.array[i] = 0.5 * Math.sin(i + time);
+ 
+    }
+
+    attributes.customSize.needsUpdate = true;
+
 }
 
 /**
