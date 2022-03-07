@@ -79,7 +79,7 @@ function init_three() {
 
     for (i = 0; i < 10000; i++) {
         visibles[i] = 1.0;
-        opacitys[i] = 0.20;
+        opacitys[i] = 0.70;
         sizes[i] = 0.3;
 
         vertexColor.setHSL( Math.random(), 1, 0.5);
