@@ -1,0 +1,215 @@
+* {
+  box-sizing: 
+  border-box;
+}
+
+@font-face {
+  font-family: FastHand;
+  src: url(fonts/FastHand.ttf);
+}
+
+@font-face {
+  font-family: Aquire;
+  src: url(fonts/Aquire.otf);
+}
+
+@font-face {
+  font-family: Acetone;
+  src: url(fonts/Acetone.ttf);
+}
+
+@font-face {
+  font-family: entanglement;
+  src: url(fonts/entanglement.ttf);
+}
+
+
+/* 
+h1{
+	font-family:Aquire;
+	color:white;
+	font-size:50px;
+	position: relative;
+  text-align: center;
+} */
+
+h2{
+	color: white;
+	font-size: 25px;
+}
+
+div#main {
+ position: fixed;
+ top: 0;
+}
+/*
+.menu {
+   background-color: rgba(0, 0, 0, 0.5);
+   width: 260px;
+   margin: 0;
+   padding: 0.25em;
+   font-size: 1.7em;
+   position: absolute;
+   left: -245px; 
+   top: 250px;
+   border-style: solid;
+   border-color: blue;
+   border-right: 14px solid white;
+   transition: left .6s ease-out;
+}
+
+.menu:hover {
+   left: 0;
+   transition: left .6s ease-out;
+}
+
+.menu ul {
+   list-style: none;
+   margin: 0;
+   padding: 0.35em;
+}
+
+.menu ul li {
+   margin: 0.75em 0.25em;  
+   border-bottom: solid 1pt blue;
+}
+
+.menu p {
+   color: white;
+   width: 30px;
+   position: relative;
+   transform: translatex(210px);
+}
+*/
+body {
+  margin: 0;
+  font-family: entanglement;
+  font-size: 17px;
+}
+
+
+.content {
+position: fixed;
+  bottom: 0;
+  color: #f1f1f1;
+  width: 100%;
+  padding: 20px;
+}
+
+.button{
+	align-items: center;
+	float: right;
+	Position: absolute;
+	right: 270px;
+	top:670px;
+	width: 250px;
+	font-family: entanglement;
+	background-color: rgba(0,0,0,0.3);
+  border: solid 1px rgb(0,128,255);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+  color: white;
+  background-color: background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+
+.button:hover {
+	background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
+  
+  color: white;
+}
+
+.button1{
+	align-items: center;
+	float: right;
+	Position: absolute;
+right: 0px;
+top: 670px;
+font-family: entanglement;
+background-color: rgba(0,0,0,0.3);
+  border: solid 1px rgb(0,128,255);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+  color: white;
+  background-color: background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+
+.button1:hover {
+	background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%);
+  
+  color: white;
+}
+
+.description{
+	position: fixed;
+	left:10pt;
+  top: 95%;
+	font-family: Aquire;
+	text-align:left;
+	color: white;
+	font-size: 18px;
+}
+
+.title{
+  position: absolute;
+  text-align: center;
+  color:white;
+   text-shadow: 2px 2px black;
+  top: -75pt;
+  left: 300pt;
+}
+
+#main_title{
+  font-size: 150pt;
+  bottom: 400pt;
+}
+
+#main_part{
+    font-size: 38pt;
+    left: -15pt;
+    top: -120pt;
+    position: relative;
+}
+
+#myBtn {
+  width: 200px;
+  font-size: 18px;
+  padding: 10px;
+  border: none;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+
+#myBtn:hover {
+  background: #ddd;
+  color: black;
+}
+
+
+#myVideo {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%; 
+  min-height: 100%;
+}
+
+aside.title{
+  position: absolute;
+}
