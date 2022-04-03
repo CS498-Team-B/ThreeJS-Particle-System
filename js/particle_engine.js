@@ -56,11 +56,54 @@ class Particle {
     }
 }
 
-// PARTICLE SHADERS
-
-// TO-DO
-
 // PARTICLE ENGINE
+
+/**
+ * EngineType Class (This class structure is supposed to mimic an enum class from C++)
+ * Provides metadata for the type of engine being used currently
+ * "Type" here means the macroscopic geometry of the engine
+ */
+class EngineType {
+    static Cube = new EngineType('Cube', 1);
+    static Sphere = new EngineType('Sphere', 2);
+
+    constructor(name, id) {
+        this.name = name;
+        this.id = id
+    }
+
+    toString() {
+        return `Color.${this.name}(${this.id})`
+    }
+}
+
+/**
+ * Tween Class
+ * Provides mathematical foundation to use linear interpolation
+ * based animations on our particles
+ */
+class Tween {
+    constructor(time, value) {
+        this.time  = time || [];
+        this.value = value || [];
+    }
+
+    Lerp(dt) {
+        var i = 0;
+        var n = this.time.length;
+        while (i < n && t > this.times[i]) {
+            i++;
+        }
+        if (i == 0) return this.values[0];
+        if (i == n) return this.values[n-1];
+        var p = (t - this.times[i-1]) / (this.times[i] - tthis.times[i-1]);
+        if (this.values[0] instanceof THREE.Vector3) {
+            return this.values[i-1].clone().lerp(this.values[i], p);
+        } else {
+            return this.values[i-1] + p * (this.values[i] - this.values[i-1]);
+        }
+    }
+}
 
 /**
  * ParticleEngine Class
@@ -69,6 +112,62 @@ class Particle {
  */
 class ParticleEngine {
     constructor() {
-        // TO-DO
+        // Physics
+        this.pos_style = EngineType.Cube
+        this.pos_base = new THREE.Vector3();
+        this.pos_spread = new THREE.Vector3();
+        this.pos_radius = new THREE.Vector3();
+
+        this.vel_style = EngineType.Cube
+        this.vel_base = new THREE.Vector3();
+        this.vel_spread = new THREE.Vector3();
+        this.speed_base = 0;
+        this.speed_spread = 0;
+
+        this.acc_base = new THREE.Vector3();
+        this.acc_spread = new THREE.Vector3();
+
+        // Attributes
+        this.size_base = 0.0;
+        this.size_spread = 0.0;
+        this.size_tween = new Tween();
+        this.opacity_base = 1.0;
+        this.opacity_spread = 0.0;
+        this.opacity_tween = new Tween();
+        this.blend = THREE.NormalBlending;
+
+        // Buffer
+        this.particle_buffer = [];
+        this.pps = 100;
+        this.particle_death = 1.0;
+
+        this.emitter_age = 0.0;
+        this.emitter_firing = true;
+        this.emitter_death = 60.0;
+
+        this.particle_count = this.pps * Math.min(this.particle_death, this.emitter_death);
+
+        this.particle_geom = new THREE.BufferGeometry();  // specify points
+        this.particle_geom.setAttribute('customVisible', []);
+        this.particle_geom.setAttribute('customSize', []);
+        this.particle_geom.setAttribute('customOpacity', []);
+        this.particle_geom.setAttribute('customColor', []);
+        this.particle_tex = null;
+        this.particle_mat = new THREE.ShaderMaterial( 
+            {
+                uniforms: 
+                {
+                    texture1:   { type: "t", value: this.particle_tex },
+                },
+                vertexShader:   particleVertexShader,
+                fragmentShader: particleFragmentShader,
+                transparent: true,
+                blending: THREE.NormalBlending, depthTest: true,
+                alphaTest: 0.5,
+                vertexColors: true,
+            });
+        
+        this.particleMesh = new THREE.Mesh();
+
     }
 }
