@@ -23,11 +23,11 @@ class Particle {
         // Aesthetic Parameters
         this.color = new THREE.Color();
         this.opacity = 1.0;
+        this.size = 16.0;
 
         // Lifetime Parameters
-        this.lifetime = 255.0;
-        this.remaining = this.lifetime;
-        this.dead = 0.0;
+        this.age = 0;
+        this.alive = 0;
     }
 
     /**
@@ -45,14 +45,21 @@ class Particle {
         this.position.add(this.velocity.clone().multiplyScalar(dt)); 
         this.velocity.add(this.acceleration.clone().multiplyScalar(dt)); 
 
-        this.remaining -= dt;
-        if (remining <= 0.0) {
-            dead = 1.0; // Particles has died
-        }
+        this.age += dt;
 
-        // If the particle is not yet dead update the aesthetics
-        if (dead < 1.0)
-            this.opacity = remaining / lifetime;
+        if (this.size_tween.times.length > 0) {
+            this.size = this.size_tween.lerp(this.age);
+        }
+				
+        if (this.col_tween.times.length > 0 )
+        {
+            var colorHSL = this.col_tween.lerp(this.age);
+            this.color = new THREE.Color().setHSL(colorHSL.x, colorHSL.y, colorHSL.z);
+        }
+        
+        if ( this.opacity_tween.times.length > 0 ) {
+            this.opacity = this.opacity_tween.lerp(this.age);
+        }
     }
 }
 
@@ -131,6 +138,9 @@ class ParticleEngine {
         this.size_base = 0.0;
         this.size_spread = 0.0;
         this.size_tween = new Tween();
+        this.col_base = new THREE.Vector3(0.0, 1.0, 0.5);
+        this.col_spread = new THREE.Vector3(0.0, 0.0, 0.0);
+        this.col_tween = new Tween();
         this.opacity_base = 1.0;
         this.opacity_spread = 0.0;
         this.opacity_tween = new Tween();
@@ -164,10 +174,58 @@ class ParticleEngine {
                 transparent: true,
                 blending: THREE.NormalBlending, depthTest: true,
                 alphaTest: 0.5,
-                vertexColors: true,
             });
         
         this.particleMesh = new THREE.Mesh();
+    }
 
+    SetValues(params) {
+        if (params == undefined) return;
+
+        this.size_tween = new Tween();
+        this.col_tween = new Tween();
+        this.opacity_tween = new Tween();
+
+        for (var key in params) {
+            this[key] = params[key];
+        }
+        
+        Particle.size_tween = this.size_tween;
+        Particle.col_tween = this.col_tween;
+        Particle.opacity_tween = this.opacity_tween;
+
+        this.particle_buffer = [];
+        this.emitter_age = 0.0;
+        this.emitter_firing = true;
+        this.particle_count = this.pps * Math.min(this.particle_death, this.emitter_death);
+
+        this.particle_geom = new THREE.BufferGeometry();  // specify points
+        this.particle_geom.setAttribute('customVisible', []);
+        this.particle_geom.setAttribute('customSize', []);
+        this.particle_geom.setAttribute('customOpacity', []);
+        this.particle_geom.setAttribute('customColor', []);
+        this.particle_tex = null;
+        this.particle_mat = new THREE.ShaderMaterial( 
+            {
+                uniforms: 
+                {
+                    texture1:   { type: "t", value: this.particle_tex },
+                },
+                vertexShader:   particleVertexShader,
+                fragmentShader: particleFragmentShader,
+                transparent: true,
+                blending: THREE.NormalBlending, depthTest: true,
+                alphaTest: 0.5,
+            });
+        
+        this.particleMesh = new THREE.Points();
+    }
+
+    RandomValue(base, spread) {
+        return base + spread * (Math.random() - 0.5);
+    }
+    RandomVec3(base, spread) {
+        var rand3 = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+        return new THREE.Vector3().addVectors(base, new THREE.Vector3().multiplyVectors(spread, rand3));
     }
 }

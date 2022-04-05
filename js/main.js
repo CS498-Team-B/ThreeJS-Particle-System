@@ -16,20 +16,25 @@ let gui;
 let animation;
 // DatGUI Settings
 let anim = {
-    speed: 1.0,
+    rotationSpeed:0.01,
+    count: 10000,
 };
 
 init();
 animate();
 
+// Initialize DatGUI Configurations
 function init_gui() {
     gui = new dat.GUI({name: 'Particle Controls'});
     animation = gui.addFolder('Animation Settings');
-    animation.add(anim, "speed", 0.0, 10.0, 0.05);
+    animation.add(anim, "rotationSpeed", 0, 0.5, 0.01);
+    animation.add(anim, "count", 0, 100000, 10);
+
 }
 
+// Initialize THREE Configurations
 function init_three() {
-    engine = new ParticleEngine(); // Doesn't do much yet
+    //engine = new ParticleEngine(); // Doesn't do much yet
     
     clock = new THREE.Clock(true); // Will autostart
 
@@ -48,14 +53,19 @@ function init_three() {
     camera.position.set(0, 0, -10);
     controls.update();
     
+    generate_particle_mesh();
+
+    window.addEventListener( 'resize', onWindowResize );
+}
+
+function generate_particle_mesh() {
+    // Load Hardcoded Texture (For Now)
     const starTexture = new THREE.TextureLoader().load("./textures/star.png");
     starTexture.wrapS = THREE.RepeatWrapping;
     starTexture.wrapT = THREE.RepeatWrapping;
     starTexture.repeat.set(1, 1);
 
     // Particle Setup
-    
-
    const shaderMaterial = new THREE.ShaderMaterial( 
         {
             uniforms: 
@@ -70,14 +80,17 @@ function init_three() {
             vertexColors: true,
         });
 
-    const visibles = new Float32Array(10000);
-    const sizes = new Float32Array(10000);
-    const opacitys = new Float32Array(10000);
-    const colors = new Float32Array(10000 * 3);
+
+    const NR_PARTICLES = anim.count; // number of particles
+
+    const visibles = new Float32Array(NR_PARTICLES);
+    const sizes = new Float32Array(NR_PARTICLES);
+    const opacitys = new Float32Array(NR_PARTICLES);
+    const colors = new Float32Array(NR_PARTICLES * 3);
     
     const vertexColor = new THREE.Color();
 
-    for (i = 0; i < 10000; i++) {
+    for (i = 0; i < NR_PARTICLES; i++) {
         visibles[i] = 1.0;
         opacitys[i] = 0.70;
         sizes[i] = 0.3;
@@ -85,23 +98,14 @@ function init_three() {
         vertexColor.setHSL( Math.random(), 1, 0.5);
         vertexColor.toArray(colors, i*3);
     }
+
+    // Fill Attribute Buffers
     const particleGeometry = new THREE.BufferGeometry;  // specify points
     particleGeometry.setAttribute('customVisible', new THREE.BufferAttribute(visibles, 1));
     particleGeometry.setAttribute('customSize', new THREE.BufferAttribute(sizes, 1));
     particleGeometry.setAttribute('customOpacity', new THREE.BufferAttribute(opacitys, 1));
     particleGeometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
-
-    const particleMaterial = new THREE.PointsMaterial(
-        {
-            map: starTexture,
-            transparent: true,
-            opacity: 0.5,
-            size: 0.25,
-            color: "white",
-        }
-    );  
     
-    const NR_PARTICLES = 10000; // number of particles
     let positions = new Float32Array( NR_PARTICLES * 3 );  // array of particle positions
     for(let i = 0; i < NR_PARTICLES * 3; i++)
     {
@@ -112,8 +116,6 @@ function init_three() {
     particleGeometry.setAttribute( "position", new THREE.BufferAttribute( positions, 3 ) );
     particleMesh = new THREE.Points( particleGeometry, shaderMaterial ); // mesh
     scene.add(particleMesh);
-        
-    window.addEventListener( 'resize', onWindowResize );
 }
 
 function init() {
@@ -127,6 +129,14 @@ function init() {
 function animate() {
     requestAnimationFrame( animate );
 
+    if (particleMesh.geometry.attributes.customSize.length !== anim.count) {
+        // Dispose of the current mesh then regenerate it if we need to update particle count
+        particleMesh.geometry.dispose()
+        particleMesh.material.dispose()
+        scene.remove(scene.getObjectByProperty('uuid', particleMesh.uuid))
+        generate_particle_mesh();
+    }
+
     render();
 
     renderer.render( scene, camera );
@@ -138,7 +148,7 @@ function animate() {
 function render() {
     const time = Date.now() * 0.005;
     
-    particleMesh.rotation.z = 0.01 * time;
+    particleMesh.rotation.z = anim.rotationSpeed * time;
 
     const geometry = particleMesh.geometry;
 	const attributes = geometry.attributes;
