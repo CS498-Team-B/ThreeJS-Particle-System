@@ -4,6 +4,7 @@
  * This file contains all the interaction with ThreeJS
  */
 
+
 // Particle Engine!
 let engine;
 
@@ -18,6 +19,8 @@ let animation;
 let anim = {
     rotationSpeed:0.01,
     count: 10000,
+    color0: [0, 0, 0],
+    color1: [255, 255, 255],
 };
 
 init();
@@ -28,8 +31,16 @@ function init_gui() {
     gui = new dat.GUI({name: 'Particle Controls'});
     animation = gui.addFolder('Animation Settings');
     animation.add(anim, "rotationSpeed", 0, 0.5, 0.01);
-    animation.add(anim, "count", 0, 100000, 10);
-
+    animation.add(anim, "count", 0, 100000, 10).onChange(() => {
+        updatePoints();
+    });
+    colors = gui.addFolder('Color Settings');
+    colors.addColor(anim, "color0").onChange(() => {
+        updatePoints();
+    });
+    colors.addColor(anim, "color1").onChange(() => {
+        updatePoints();
+    });
 }
 
 // Initialize THREE Configurations
@@ -58,6 +69,15 @@ function init_three() {
     window.addEventListener( 'resize', onWindowResize );
 }
 
+function RandomColorFromSettings() {
+    f = Math.random();
+    rT = (anim.color1[0] - anim.color0[0]) * f + anim.color0[0];
+    gT = (anim.color1[1] - anim.color0[1]) * f + anim.color0[1]; 
+    bT = (anim.color1[2] - anim.color0[2]) * f + anim.color0[2];
+    result = [rT / 255.0, gT / 255.0, bT / 255.0]
+    return result;
+}
+
 function generate_particle_mesh() {
     // Load Hardcoded Texture (For Now)
     const starTexture = new THREE.TextureLoader().load("./textures/star.png");
@@ -74,7 +94,7 @@ function generate_particle_mesh() {
             },
             vertexShader:   particleVertexShader,
             fragmentShader: particleFragmentShader,
-            transparent: true, // alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5, 
+            transparent: true,
             blending: THREE.NormalBlending, depthTest: true,
             alphaTest: 0.5,
             vertexColors: true,
@@ -95,7 +115,8 @@ function generate_particle_mesh() {
         opacitys[i] = 0.70;
         sizes[i] = 0.3;
 
-        vertexColor.setHSL( Math.random(), 1, 0.5);
+        const randomColor = RandomColorFromSettings();
+        vertexColor.setRGB(randomColor[0], randomColor[1], randomColor[2]);
         vertexColor.toArray(colors, i*3);
     }
 
@@ -123,20 +144,20 @@ function init() {
     init_three();
 }
 
+
+function updatePoints() {
+    // Dispose of the current mesh then regenerate it if we need to update particle count
+    particleMesh.geometry.dispose()
+    particleMesh.material.dispose()
+    scene.remove(scene.getObjectByProperty('uuid', particleMesh.uuid))
+    generate_particle_mesh();
+}
 /**
  *  animate() - Calls each individual animation frame and renders it.
  */
 function animate() {
     requestAnimationFrame( animate );
-
-    if (particleMesh.geometry.attributes.customSize.length !== anim.count) {
-        // Dispose of the current mesh then regenerate it if we need to update particle count
-        particleMesh.geometry.dispose()
-        particleMesh.material.dispose()
-        scene.remove(scene.getObjectByProperty('uuid', particleMesh.uuid))
-        generate_particle_mesh();
-    }
-
+    
     render();
 
     renderer.render( scene, camera );

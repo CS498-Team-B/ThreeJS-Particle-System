@@ -33,6 +33,7 @@ particleFragmentShader =
     "gl_FragColor = vColor;",
     "vec2 uv = vec2(gl_PointCoord.x, gl_PointCoord.y);",
     "vec4 tex1 = texture2D( texture1,  uv );",
+    "if (tex1.x <= 0.1) discard;",
     "gl_FragColor = gl_FragColor * tex1;",    // sets an otherwise white particle texture to desired color
 "}"
 ].join("\n");
